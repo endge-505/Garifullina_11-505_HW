@@ -1,50 +1,47 @@
 import java.util.Random;
 import java.util.Scanner;
 
-public class hw_7{
+public class hw_7 {
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         Random random = new Random();
 
-        System.out.println("Какие примеры по уровню сложностью вы хотите: легкие или сложные?");
-        String uroven = scanner.nextLine().trim();
+        System.out.println("Какие примеры по уровню сложности вы хотите: легкие или сложные (easy / hard)?");
+        String uroven = scanner.nextLine();
 
-        System.out.println("Сколько примеров хотите прорешать?");
+        System.out.println("Сколько примеров хотите порешать?");
         int kol_vopr = scanner.nextInt();
         scanner.nextLine();
 
         int oper = 1;
-        if (uroven.equalsIgnoreCase("сложные")) {
+        if (uroven.equalsIgnoreCase("hard")) {
             System.out.println("Какое количество операций хотите, чтоб было в примере?");
             oper = scanner.nextInt();
             scanner.nextLine();
         }
 
-        System.out.println("Хотите ли ввести свои примеры? (да/нет)");
-        String answer = scanner.nextLine().trim();
-        boolean use = answer.equalsIgnoreCase("да");
+        System.out.println("Хотите ли ввести свои примеры? (yes/no)");
+        String answer = scanner.nextLine();
+        boolean use = answer.equalsIgnoreCase("yes");
         boolean solv = false;
         if (use) {
-            System.out.println("Хотите ли прорешать свои примеры или сгенерировать их? (да - свои /нет - сгенерировать)");
-            solv = scanner.nextLine().equalsIgnoreCase("да");
+            System.out.println("Хотите ли прорешать свои примеры или сгенерировать их? (yes - свои /no - сгенерировать)");
+            solv = scanner.nextLine().equalsIgnoreCase("yes");
         }
 
         for (int i = 0; i < kol_vopr; i++) {
             String expr;
-            String corrects;
             double correct;
 
             if (use && solv) {
-
                 System.out.println("Введите пример (например: 2 + 3 * 4):");
                 expr = scanner.nextLine();
-                correct = evaluateExpression(expr);
+                correct = val(expr);
             } else {
-
                 int[] nums;
                 String[] ops;
-                if (uroven.equalsIgnoreCase("легкий")) {
+                if (uroven.equalsIgnoreCase("easy")) {
                     nums = new int[2];
                     nums[0] = random.nextInt(15) + 1;
                     nums[1] = random.nextInt(15) + 1;
@@ -71,8 +68,8 @@ public class hw_7{
                 }
                 simb.append("= ?");
                 expr = simb.toString();
-                String evalExpr = expr.substring(0, expr.indexOf("= ?")).trim();
-                correct = evaluateExpression(evalExpr);
+                String va_xpr = expr.substring(0, expr.indexOf("= ?")).trim();
+                correct = val(va_xpr);
                 System.out.println("Пример: " + expr);
             }
 
@@ -80,7 +77,8 @@ public class hw_7{
             String ansStr = scanner.nextLine().replace(',', '.');
             double user_a = Double.parseDouble(ansStr);
 
-            if (Math.abs(user_a - correct) < 1e-2) {
+            // Исправление логики сравнения
+            if (Math.abs(user_a - correct) < 1e-5) {
                 System.out.println("Правильно!");
             } else {
                 System.out.println("Неправильно. Правильный ответ: " + correct);
@@ -89,19 +87,17 @@ public class hw_7{
         System.out.println("Примеры закончились :( ");
     }
 
-
-    public static double evaluateExpression(String expr) {
+    public static double val(String expr) {
         String clean_ex = expr.replaceAll("\\s+", "");
         double result = 0;
         String numberStr = "";
-        char lastOp = '+'; // для первого числа
-        int i = 0;
-        while (i <= clean_ex.length()) {
-            if (i < clean_ex.length() && (Character.isDigit(clean_ex.charAt(i)) || clean_ex.charAt(i) == '.')) {
+        char lastOp = '+'; // Для первого числа
+
+        for (int i = 0; i < clean_ex.length(); i++) {
+            if (Character.isDigit(clean_ex.charAt(i)) || clean_ex.charAt(i) == '.') {
                 numberStr += clean_ex.charAt(i);
-                i++;
             } else {
-                // встретился оператор или конец
+                // случай когда встретился оператор
                 if (!numberStr.isEmpty()) {
                     double num = Double.parseDouble(numberStr);
                     switch (lastOp) {
@@ -115,15 +111,41 @@ public class hw_7{
                             result *= num;
                             break;
                         case '/':
-                            result /= num;
+                            if (num != 0) { // Проверяем деление на ноль
+                                result /= num;
+                            } else {
+                                System.out.println("Ошибка: деление на ноль!");
+                                return Double.NaN; // Возвращаем NaN в случае деления на ноль
+                            }
                             break;
                     }
                     numberStr = "";
                 }
-                if (i < clean_ex.length()) {
-                    lastOp = clean_ex.charAt(i);
-                }
-                i++;
+                lastOp = clean_ex.charAt(i);
+            }
+        }
+
+        // Обрабатываем последнее число
+        if (!numberStr.isEmpty()) {
+            double num = Double.parseDouble(numberStr);
+            switch (lastOp) {
+                case '+':
+                    result += num;
+                    break;
+                case '-':
+                    result -= num;
+                    break;
+                case '*':
+                    result *= num;
+                    break;
+                case '/':
+                    if (num != 0) {
+                        result /= num;
+                    } else {
+                        System.out.println("Ошибка: деление на ноль!");
+                        return Double.NaN;
+                    }
+                    break;
             }
         }
         return result;
