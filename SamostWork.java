@@ -25,7 +25,7 @@ interface Cleaning {
     void finish();
 }
 
-enum RoomStatus {
+interface RoomStatus {
     FREE("Свободен"),
     OCCUP("Занят"),
     CLEAN("На уборке");
@@ -147,3 +147,4 @@ class SuiteRoom extends Room_2 implements Room_1, Cleaning {
         }
     }
 }
+
